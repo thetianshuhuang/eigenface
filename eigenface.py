@@ -8,7 +8,7 @@ import math
 IMAGES = ["data/{idx}.png".format(idx=str(i + 1)) for i in range(640)]
 PCA_RANK = 20
 PCA_SCAN_INTERVAL = 5
-DEBUG = False
+DEBUG = True
 
 
 def show_face(image, caption="Image"):
@@ -81,6 +81,7 @@ if DEBUG:
 mean, eigenvectors, eigenvalues = cv2.PCACompute2(data, mean=None)
 
 if DEBUG:
+    print(eigenvectors[0])
     for i in range(5):
         show_face(
             eigenvectors[i].reshape([50, 50]),
