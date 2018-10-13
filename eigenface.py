@@ -1,4 +1,9 @@
 
+"""
+Compute eigenfaces, and test reference images by projecting to the top N
+eigenfaces.
+"""
+
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,6 +17,18 @@ DEBUG = True
 
 
 def show_face(image, caption="Image"):
+    """Display a face in an OpenCV Window
+
+    Parameters
+    ----------
+    image : np.array
+        Image to display
+
+    Keyword Args
+    ------------
+    caption : str
+        window caption
+    """
 
     # Copy for display transformations
     disp = image.copy()
@@ -28,11 +45,31 @@ def show_face(image, caption="Image"):
 
 
 def load_gray(filepath):
+    """Load a grayscale image
+
+    Parameters
+    ----------
+    filepath : str
+        File to load
+
+    Returns
+    -------
+    np.array
+        Loaded image
+    """
 
     return cv2.cvtColor(cv2.imread(filepath), cv2.COLOR_BGR2GRAY)
 
 
 def load_images():
+    """Load all images, as specified by config constant IMAGES
+
+    Returns
+    -------
+    np.array
+        Data matrix, where each row is a data vector consisting of the image
+        pixels rearranged in a 2500x1 vector
+    """
 
     data = None
     for file in IMAGES:
@@ -48,6 +85,15 @@ def load_images():
 
 
 def project(image, eigenvectors):
+    """Project a face onto a set of eigenvectors.
+
+    Parameters
+    ----------
+    image : array
+        image to project
+    eigenvectors : np.array[]
+        list of eigenvectors.
+    """
 
     projection = [np.sum(np.multiply(image, v)) for v in eigenvectors]
     approx = sum(np.multiply(*v) for v in zip(projection, eigenvectors))
@@ -64,6 +110,16 @@ def project(image, eigenvectors):
 
 
 def test(file, eigenvectors):
+    """Run tests on a given file using a set of eigenvectors
+
+    Parameters
+    ----------
+    file : str
+        File to load test image from
+    eigenvectors : np.array[]
+        Complete list of all eigenvectors
+    """
+
     for i in range(1, int(PCA_RANK / PCA_SCAN_INTERVAL)):
         print(i * PCA_SCAN_INTERVAL)
         project(
@@ -71,29 +127,36 @@ def test(file, eigenvectors):
             eigenvectors[:PCA_SCAN_INTERVAL * i])
 
 
-data = load_images()
+if __name__ == "__main__":
 
-if DEBUG:
-    cv2.imshow('Data Matrix', data)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # Load images
+    data = load_images()
 
-mean, eigenvectors, eigenvalues = cv2.PCACompute2(data, mean=None)
+    # Show data matrix
+    if DEBUG:
+        cv2.imshow('Data Matrix', data)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
-if DEBUG:
-    print(eigenvectors[0])
-    for i in range(5):
-        show_face(
-            eigenvectors[i].reshape([50, 50]),
-            caption="Eigenvector {idx}: Value={val}"
-            .format(idx=str(i + 1), val=eigenvalues[i]))
+    # Run PCA
+    mean, eigenvectors, eigenvalues = cv2.PCACompute2(data, mean=None)
 
-test("testcase/test_01.png", eigenvectors)
-test("testcase/test_02.png", eigenvectors)
+    # Show top 5 eigenfaces
+    if DEBUG:
+        print(eigenvectors[0])
+        for i in range(5):
+            show_face(
+                eigenvectors[i].reshape([50, 50]),
+                caption="Eigenvector {idx}: Value={val}"
+                .format(idx=str(i + 1), val=eigenvalues[i]))
 
+    # Run tests
+    test("testcase/test_01.png", eigenvectors)
+    test("testcase/test_02.png", eigenvectors)
 
-plt.plot([i for i in range(640)], eigenvalues)
-plt.show()
+    # Show Eigenspectrum
+    plt.plot([i for i in range(640)], eigenvalues)
+    plt.show()
 
-plt.plot([i for i in range(640)], [math.log(abs(i)) for i in eigenvalues])
-plt.show()
+    plt.plot([i for i in range(640)], [math.log(abs(i)) for i in eigenvalues])
+    plt.show()
