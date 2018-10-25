@@ -6,7 +6,9 @@ from common import *
 import numpy as np
 import math
 
-IMAGES = ["data/{idx}.png".format(idx=str(i + 1)) for i in range(640)]
+import pdb
+
+IMAGES = ["data/{idx}.png".format(idx=str(i + 1)) for i in range(20)]
 DEBUG = True
 
 
@@ -22,49 +24,56 @@ def gaussian_kernel(img1, img2, beta=1):
         -1 * beta * np.linalg.norm(np.subtract(img2, img1))**2)
 
 
-def make_kernel_matrix(data, kernel):
+class KPCA:
 
-    K = np.matrix([[kernel(i, j) for i in data] for j in data])
-    n = K.shape[0]
-    J = np.matrix(np.ones((n, n)) * (1 / n))
+    def __init__(self, data, kernel):
 
-    return K - 2 * J * K + J.T * K * J
+        self.data = data
+        self.kernel_matrix = self._make_kernel_matrix(data, kernel)
+        self.kernel = kernel
 
+    def run(self):
 
-def project(image, data, eigenvalues, eigenvectors, kernel):
+        (self.eigenvalues,
+         self.eigenvectors) = np.linalg.eigh(self.kernel_matrix)
 
-    # A <- eigenvectors (each eigenvector is a row)
-    A = np.matrix(eigenvectors)
-    # K <- [K(x, x_i)...].T
-    K = np.matrix([kernel(image[0], s) for s in data]).T
+        self.eigenvectors = self.eigenvectors / len(self.data)
 
-    # y_j  = sum(a_ji K(x, x_i))
-    #      = a_j.T * K
-    # => y = A * K
-    weights = A * K
+        return self
 
-    return normalize(np.matrix(data).T * (A.T * weights))
+    def _make_kernel_matrix(self, data, kernel):
+
+        K = np.matrix([[kernel(i, j) for i in data] for j in data])
+        n = K.shape[0]
+        J = np.matrix(np.ones((n, n)) * (1 / n))
+
+        return K - 2 * J * K + J.T * K * J
+
+    def project(self, x):
+
+        y = [
+            float(
+                np.dot(alpha, [self.kernel(x[0], x_i) for x_i in self.data]))
+            for alpha in self.eigenvectors
+        ]
+
+        return np.matrix(y).T
 
 
 if __name__ == "__main__":
 
     # Load images
-    data = load_images(IMAGES)
+    data = load_images(IMAGES) / 256 / 50 / 50
 
-    K = make_kernel_matrix(data, polynomial_kernel)
-    eigenvalues, eigenvectors = np.linalg.eigh(K)
+    kpca = KPCA(data, polynomial_kernel).run()
 
-    for file in ['testcase/test_01.png', 'testcase/test_02.png']:
+    # for i in range(10):
+    #    A = np.matrix(eigenvectors[i]).T
+    #    p = data.T * A
+    #    show_face(p.reshape([50, 50]), caption="Eigenvector {i}".format(i=i))
+
+    for file in ['data/1.png', 'testcase/test_01.png', 'testcase/test_02.png']:
 
         src = normalize(load_gray(file).reshape([1, -1]))
 
-        p = project(
-            src, data, eigenvalues[:2], eigenvectors[:20], polynomial_kernel)
-
-        error = np.absolute(p.T - src)
-
-        show_face(p.reshape([50, 50]), caption="Approximated Image")
-        show_face(
-            error.reshape([50, 50]),
-            caption="Error: {err} ({perr}%)"
-            .format(err=np.sum(error), perr=np.sum(error) / 2500))
+        projected = kpca.project(src)
