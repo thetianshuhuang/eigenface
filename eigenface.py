@@ -9,79 +9,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
+from common import *
+
 
 IMAGES = ["data/{idx}.png".format(idx=str(i + 1)) for i in range(640)]
 PCA_RANK = 20
 PCA_SCAN_INTERVAL = 5
 DEBUG = True
-
-
-def show_face(image, caption="Image"):
-    """Display a face in an OpenCV Window
-
-    Parameters
-    ----------
-    image : np.array
-        Image to display
-
-    Keyword Args
-    ------------
-    caption : str
-        window caption
-    """
-
-    # Copy for display transformations
-    disp = image.copy()
-
-    # Scale to [0,1]
-    disp = np.multiply(disp, 1 / (disp.max() - disp.min()))
-    disp = np.subtract(disp, disp.min())
-
-    # Make bigger and show
-    disp = cv2.resize(disp, None, fx=10, fy=10)
-    cv2.imshow(caption, disp)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-
-def load_gray(filepath):
-    """Load a grayscale image
-
-    Parameters
-    ----------
-    filepath : str
-        File to load
-
-    Returns
-    -------
-    np.array
-        Loaded image
-    """
-
-    return cv2.cvtColor(cv2.imread(filepath), cv2.COLOR_BGR2GRAY)
-
-
-def load_images():
-    """Load all images, as specified by config constant IMAGES
-
-    Returns
-    -------
-    np.array
-        Data matrix, where each row is a data vector consisting of the image
-        pixels rearranged in a 2500x1 vector
-    """
-
-    data = None
-    for file in IMAGES:
-        img = load_gray(file)
-        img = img.reshape([1, -1])
-        if data is None:
-            data = img.copy()
-            print(data)
-        else:
-            data = np.concatenate((data, img), axis=0)
-
-    return data
 
 
 def project(image, eigenvectors):
@@ -130,7 +64,7 @@ def test(file, eigenvectors):
 if __name__ == "__main__":
 
     # Load images
-    data = load_images()
+    data = load_images(IMAGES)
 
     # Show data matrix
     if DEBUG:
