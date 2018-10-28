@@ -1,79 +1,34 @@
 
-"""
-"""
-
-from common import *
+from kpca import KPCA
+from faces import IMAGES, TEST_IMAGES
+import kernels
+from common import show_face, timeit
 import numpy as np
-import math
-
-import pdb
-
-IMAGES = ["data/{idx}.png".format(idx=str(i + 1)) for i in range(20)]
-DEBUG = True
 
 
-def polynomial_kernel(img1, img2, p=2):
-
-    return (1 + sum(img1 * img2))**p
-
-
-def gaussian_kernel(img1, img2, beta=1):
-
-    return math.pow(
-        math.e,
-        -1 * beta * np.linalg.norm(np.subtract(img2, img1))**2)
+@timeit
+def kpca_model():
+    return KPCA(IMAGES, kernels.gaussian).run()
 
 
-class KPCA:
-
-    def __init__(self, data, kernel):
-
-        self.data = data
-        self.kernel_matrix = self._make_kernel_matrix(data, kernel)
-        self.kernel = kernel
-
-    def run(self):
-
-        (self.eigenvalues,
-         self.eigenvectors) = np.linalg.eigh(self.kernel_matrix)
-
-        self.eigenvectors = self.eigenvectors / len(self.data)
-
-        return self
-
-    def _make_kernel_matrix(self, data, kernel):
-
-        K = np.matrix([[kernel(i, j) for i in data] for j in data])
-        n = K.shape[0]
-        J = np.matrix(np.ones((n, n)) * (1 / n))
-
-        return K - 2 * J * K + J.T * K * J
-
-    def project(self, x):
-
-        y = [
-            float(
-                np.dot(alpha, [self.kernel(x[0], x_i) for x_i in self.data]))
-            for alpha in self.eigenvectors
-        ]
-
-        return np.matrix(y).T
+@timeit
+def project(src, model):
+    return model.pre_image(src, 20)
 
 
-if __name__ == "__main__":
+def project_analysis(src, model):
+    proj = project(src, model)
+    print(src)
+    print(proj)
+    error = np.absolute(np.subtract(src, proj))
+    show_face(src.reshape([50, 50]), caption="Source Image")
+    show_face(proj.reshape([50, 50]), caption="Approximated Image")
+    show_face(
+        error.reshape([50, 50]),
+        caption="Error: {err} ({perr})%"
+        .format(err=np.sum(error), perr=np.sum(error) / 2500))
 
-    # Load images
-    data = load_images(IMAGES) / 256 / 50 / 50
 
-    kpca = KPCA(data, polynomial_kernel).run()
-
-    # for i in range(10):
-    #    A = np.matrix(eigenvectors[i]).T
-    #    p = data.T * A
-    #    show_face(p.reshape([50, 50]), caption="Eigenvector {i}".format(i=i))
-
-    for file in ['data/1.png', 'testcase/test_01.png', 'testcase/test_02.png']:
-
-        src = normalize(load_gray(file).reshape([1, -1]))
-
-        projected = kpca.project(src)
+model = kpca_model()
+for image in TEST_IMAGES:
+    project_analysis(image, model)

@@ -3,7 +3,19 @@
 """
 
 import numpy as np
+import time
 import cv2
+
+
+def timeit(f):
+    def timed(*args, **kwargs):
+        start = time.time()
+        res = f(*args, **kwargs)
+
+        print("{f}: {t}s".format(f=f.__name__, t=time.time() - start))
+        return res
+
+    return timed
 
 
 def normalize(image):
@@ -55,7 +67,7 @@ def load_gray(filepath):
         Loaded image
     """
 
-    return cv2.cvtColor(cv2.imread(filepath), cv2.COLOR_BGR2GRAY)
+    return cv2.cvtColor(cv2.imread(filepath), cv2.COLOR_BGR2GRAY) / 256
 
 
 def load_images(images):
