@@ -1,34 +1,25 @@
 
-from kpca import KPCA
-from faces import IMAGES, TEST_IMAGES
+"""Sample file for pca.KPCA"""
+
+import pca
+import faces
 import kernels
-from common import show_face, timeit
-import numpy as np
+from common import timeit, show_error
 
 
 @timeit
 def kpca_model():
-    return KPCA(IMAGES, kernels.gaussian).run()
+    return pca.KPCA(faces.IMAGES, kernels.Polynomial()).run()
 
 
 @timeit
 def project(src, model):
-    return model.pre_image(src, 20)
-
-
-def project_analysis(src, model):
-    proj = project(src, model)
-    print(src)
-    print(proj)
-    error = np.absolute(np.subtract(src, proj))
-    show_face(src.reshape([50, 50]), caption="Source Image")
-    show_face(proj.reshape([50, 50]), caption="Approximated Image")
-    show_face(
-        error.reshape([50, 50]),
-        caption="Error: {err} ({perr})%"
-        .format(err=np.sum(error), perr=np.sum(error) / 2500))
+    return model.project(src, 20)
 
 
 model = kpca_model()
-for image in TEST_IMAGES:
-    project_analysis(image, model)
+
+# Run tests
+for image in faces.TEST_IMAGES:
+    proj = project(image, model)
+    show_error(image, proj, [50, 50])

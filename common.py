@@ -19,8 +19,17 @@ def timeit(f):
 
 
 def normalize(image):
+    """Normalize an image to [0,1]
 
-    # Scale to [0,1]
+    Parameters
+    ----------
+    image : np.array
+        Image to normalize
+
+    Returns
+    -------
+    """
+
     image = np.multiply(image, 1 / (image.max() - image.min()))
     image = np.subtract(image, image.min())
 
@@ -90,3 +99,30 @@ def load_images(images):
             data = np.concatenate((data, img), axis=0)
 
     return data
+
+
+def show_error(src, proj, size):
+    """Show approximation error
+
+    Parameters
+    ----------
+    src : np.array
+        Input array
+    proj : np.array
+        Output array
+    size : int[2]
+        Width and height of image
+    """
+
+    assert len(size) == 2
+
+    error = np.absolute(np.subtract(src, proj))
+    scalar_error = np.sum(error) / size[0] / size[1]
+    caption = (
+        "Error: {err} ({perr}%)"
+        .format(err=scalar_error, perr=scalar_error * 100))
+
+    print(caption)
+    show_face(src.reshape(size), caption="Source Image")
+    show_face(proj.reshape(size), caption="Projected Image")
+    show_face(error.reshape(size), caption=caption)
