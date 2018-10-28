@@ -3,3 +3,4 @@
 *.sublime*
 data/*
 testcase/*
+test_*

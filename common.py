@@ -101,7 +101,7 @@ def load_images(images):
     return data
 
 
-def show_error(src, proj, size):
+def show_error(src, proj, size, save=None):
     """Show approximation error
 
     Parameters
@@ -123,6 +123,11 @@ def show_error(src, proj, size):
         .format(err=scalar_error, perr=scalar_error * 100))
 
     print(caption)
-    show_face(src.reshape(size), caption="Source Image")
-    show_face(proj.reshape(size), caption="Projected Image")
-    show_face(error.reshape(size), caption=caption)
+
+    if save is not None:
+        cv2.imwrite(save + ".PNG", proj.reshape(size) * 255)
+        cv2.imwrite(save + "_error.PNG", error.reshape(size) * 255)
+    else:
+        show_face(src.reshape(size), caption="Source Image")
+        show_face(proj.reshape(size), caption="Projected Image")
+        show_face(error.reshape(size), caption=caption)

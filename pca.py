@@ -139,7 +139,7 @@ class KPCA:
                 alpha_k[i] for alpha_k in self.eigenvectors[-n:]])
         )
 
-    def project(self, x, n, random_start=False, iterations=20):
+    def project(self, x, n, random_start=False, iterations=40):
         r"""Compute the pre-image of a data vector in the input space
 
         Parameters

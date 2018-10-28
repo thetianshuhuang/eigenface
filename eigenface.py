@@ -16,15 +16,17 @@ def project(src, model):
     return model.project(src, 20)
 
 
-model = pca_model()
+if __name__ == "__main__":
 
-# Show top 5 eigenvectors
-for i, eigenface in enumerate(model.eigenvectors[:5]):
-    show_face(
-        eigenface.reshape([50, 50]),
-        caption="Eigenvector #{n}".format(n=i + 1))
+    model = pca_model()
 
-# Run tests
-for image in faces.TEST_IMAGES:
-    proj = project(image, model)
-    show_error(image, proj, [50, 50])
+    # Show top 5 eigenvectors
+    for i, eigenface in enumerate(model.eigenvectors[:5]):
+        show_face(
+            eigenface.reshape([50, 50]),
+            caption="Eigenvector #{n}".format(n=i + 1))
+
+    # Run tests
+    for image in faces.TEST_IMAGES:
+        proj = project(image, model)
+        show_error(image, proj, [50, 50])
