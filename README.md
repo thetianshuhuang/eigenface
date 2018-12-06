@@ -11,10 +11,13 @@ Run kernel PCA on the MNIST dataset with ```python eigennumbers.py```. ```polyno
 
 ## Sample Results
 Input image:
+
 <img src="https://github.com/thetianshuhuang/eigenface/blob/master/examples/input.png" width="100">
 
 Recovery using Linear PCA, 20 eigenvectors
+
 <img src="https://github.com/thetianshuhuang/eigenface/blob/master/examples/linear_recovery.PNG" width="100">
 
 Recovery using Kernel PCA with a Gaussian Kernel
+
 <img src="https://github.com/thetianshuhuang/eigenface/blob/master/examples/kernel_recovery.PNG" width="100">
