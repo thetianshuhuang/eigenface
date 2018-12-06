@@ -1,4 +1,6 @@
 
+"""PCA and Kernel PCA"""
+
 import cv2
 import numpy as np
 import kernels
@@ -6,12 +8,26 @@ import math
 
 
 class PCA:
+    """PCA object
+
+    Parameters
+    ----------
+    data : np.array
+        Data matrix, where each data point is a row
+    """
 
     def __init__(self, data):
 
         self.data = data
 
     def run(self):
+        """Run kernel PCA
+
+        Returns
+        -------
+        self
+            Reference to this; use for method chaining
+        """
 
         (self.mean,
          self.eigenvectors,
@@ -20,6 +36,20 @@ class PCA:
         return self
 
     def project(self, x, n):
+        """Project a new data point with n eigenvectors.
+
+        Parameters
+        ----------
+        x : np.array
+            New point to project
+        n : int
+            Number of eigenvectors to use
+
+        Returns
+        -------
+        np.array
+            Approximation of x in the space spanned by the top n eigenvectors
+        """
 
         projection = [np.sum(np.multiply(x, v)) for v in self.eigenvectors[:n]]
         approx = sum(
@@ -85,6 +115,11 @@ class KPCA:
         ])
         self.eigenvalues = [abs(lambda_k) for lambda_k in self.eigenvalues]
 
+        (self.eigenvectors,
+         self.eigenvalues) = zip(*sorted(zip(self.eigenvectors,
+                                             self.eigenvalues),
+                                         key=lambda x: x[1]))
+
         self.computed = True
 
         return self
@@ -139,7 +174,7 @@ class KPCA:
                 alpha_k[i] for alpha_k in self.eigenvectors[-n:]])
         )
 
-    def project(self, x, n, random_start=False, iterations=40):
+    def project(self, x, n, random_start=False, iterations=20):
         r"""Compute the pre-image of a data vector in the input space
 
         Parameters
@@ -171,10 +206,14 @@ class KPCA:
         assert self.computed
         assert len(x.shape) == 1 and x.shape[0] == self.d
 
+        gammas = [self._gamma_i(x, i, n) for i in range(self.N)]
+
+        c = (1 - sum(gammas)) / self.N
+        gammas = [gamma_i + c for gamma_i in gammas]
+
         z_k = (
             np.array([np.random.random() for i in range(self.d)])
             if random_start else x)
-        gammas = [self._gamma_i(x, i, n) for i in range(self.N)]
 
         for i in range(iterations):
             z_k = self.kernel.iter(gammas, self.data, z_k)

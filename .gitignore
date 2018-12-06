@@ -4,3 +4,4 @@
 data/*
 testcase/*
 test_*
+mnist.mat

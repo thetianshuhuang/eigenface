@@ -1,6 +1,5 @@
 
-"""
-"""
+"""Common subroutines for eigenfaces"""
 
 import numpy as np
 import time
@@ -8,6 +7,8 @@ import cv2
 
 
 def timeit(f):
+    """Decorator to time a function"""
+
     def timed(*args, **kwargs):
         start = time.time()
         res = f(*args, **kwargs)
@@ -76,7 +77,7 @@ def load_gray(filepath):
         Loaded image
     """
 
-    return cv2.cvtColor(cv2.imread(filepath), cv2.COLOR_BGR2GRAY) / 256
+    return cv2.cvtColor(cv2.imread(filepath), cv2.COLOR_BGR2GRAY) / 255
 
 
 def load_images(images):
@@ -125,6 +126,7 @@ def show_error(src, proj, size, save=None):
     print(caption)
 
     if save is not None:
+        cv2.imwrite(save + "_src.PNG", src.reshape(size) * 255)
         cv2.imwrite(save + ".PNG", proj.reshape(size) * 255)
         cv2.imwrite(save + "_error.PNG", error.reshape(size) * 255)
     else:

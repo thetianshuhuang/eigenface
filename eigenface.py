@@ -1,5 +1,5 @@
 
-"""Sample file for pca.PCA, run on faces."""
+"""Sample file for pca.PCA"""
 
 import pca
 import faces
